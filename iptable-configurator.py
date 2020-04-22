@@ -30,25 +30,28 @@ if os.geteuid() != 0:
 
 rules = []
 
-templates = open('rules-templates.txt', 'r');
-for line in templates:
-    line = line.replace('\n', '');
-    sp = line.split(':')
-    if query_yes_no("Do you want to allow {}(:{})?".format(sp[0], sp[1])):
-        index = len(rules);
-        if sp[2].find("/"):
-            prot = sp[2].split('/')
-            for i in range(len(prot)):
-                rules.append("iptables -A INPUT -p {} --dport {} ".format(prot[i], sp[1]))
-        else:
-            rules.append("iptables -A INPUT -p {} --dport {} ".format(sp[2], sp[1]))
+with open('rules-templates.conf') as json_file:
+    data = json.load(json_file)
 
-        while index < len(rules):
-            if  'sp[3]' in globals():
-                rules[index] += "-s {} -j ACCEPT".format(sp[3])
+    #TODO: Static rules
+    for st in data['staticRules']:
+        rules.append(st)
+
+    for rule in data['autoConfig']:
+        if query_yes_no("Do you want to allow {}(:{})?".format(rule['name'], rule['port'])):
+            index = len(rules);
+            if rule['protocol'].find("/"):
+                prot = rule['protocol'].split('/')
+                for i in range(len(prot)):
+                    rules.append("iptables -A INPUT -p {} --dport {} ".format(prot[i], rule['port']))
             else:
-                rules[index] += "-j ACCEPT"
-            index += 1
+                rules.append("iptables -A INPUT -p {} --dport {} ".format(rule['protocol'], rule['port']))
+            while index < len(rules):
+                if  'rule[\'allowedSource\']' in globals():
+                    rules[index] += "-s {} -j ACCEPT".format(rule['allowedSource'])
+                else:
+                    rules[index] += "-j ACCEPT"
+                index += 1
 
 print("\n\n\n\n\n\nWARNING: Please check the iptables below!")
 print("---------------------")
@@ -56,7 +59,7 @@ for r in rules:
     print("# {}".format(r))
 print("---------------------")
 print("It is possible that you loose your connections if you are connection via SSH!")
-print("\n\nPlease notice that the following rules are temporary! \nIf you restart you Server they will be reseted. ")
+print("\nPlease notice that the following rules are temporary! \nIf you restart you Server they will be reseted. ")
 print("If you want to save them, please search for the right method for your distribution.")
 
 if query_yes_no("Add this rules to your Server?"):
