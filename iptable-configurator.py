@@ -41,16 +41,27 @@ with open('rules-templates.conf') as json_file:
         if query_yes_no("Do you want to allow {}(:{})?".format(rule['name'], rule['port'])):
             index = len(rules);
             if rule['protocol'].find("/"):
-                prot = rule['protocol'].split('/')
+                prot = rule['protocol'].split(',')
                 for i in range(len(prot)):
                     rules.append("iptables -A INPUT -p {} --dport {} ".format(prot[i], rule['port']))
             else:
                 rules.append("iptables -A INPUT -p {} --dport {} ".format(rule['protocol'], rule['port']))
             while index < len(rules):
-                if  'rule[\'allowedSource\']' in globals():
-                    rules[index] += "-s {} -j ACCEPT".format(rule['allowedSource'])
+
+                try:
+                    interface = rule['interface']
+                except (NameError, KeyError):
+                    interface = None
                 else:
+                    rules[index] += "-i {} ".format(rule['interface'])
+
+                try:
+                    source = rule['allowedSource']
+                except (NameError, KeyError):
                     rules[index] += "-j ACCEPT"
+                else:
+                    rules[index] += "-s {} -j ACCEPT".format(rule['allowedSource'])
+
                 index += 1
 
 print("\n\n\n\n\n\nWARNING: Please check the iptables below!")
@@ -59,7 +70,7 @@ for r in rules:
     print("# {}".format(r))
 print("---------------------")
 print("It is possible that you loose your connections if you are connection via SSH!")
-print("\nPlease notice that the following rules are temporary! \nIf you restart you Server they will be reseted. ")
+print("\nPlease notice that the following rules are temporary! \nIf you restart your Server they will be reseted. ")
 print("If you want to save them, please search for the right method for your distribution.")
 
 if query_yes_no("Add this rules to your Server?"):
