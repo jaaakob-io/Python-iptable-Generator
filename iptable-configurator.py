@@ -75,6 +75,7 @@ print("If you want to save them, please search for the right method for your dis
 
 if query_yes_no("Add this rules to your Server?"):
     for r in rules:
-        print(subprocess.Popen(r, shell=True, stdout=subprocess.PIPE).stdout.read())
+        subprocess.Popen(r, shell=True, stdout=subprocess.PIPE).communicate()[0];
+        print("Added")
 else:
     sys.exit("Canceled!");
