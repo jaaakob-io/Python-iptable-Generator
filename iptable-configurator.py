@@ -26,7 +26,7 @@ def query_yes_no(question, default='no'):
 
 
 if os.geteuid() != 0:
-    sys.exit("Pleas run this script as root!")
+    sys.exit("Please run this script as root!")
 
 rules = []
 
@@ -69,11 +69,11 @@ print("---------------------")
 for r in rules:
     print("# {}".format(r))
 print("---------------------")
-print("It is possible that you loose your connections if you are connection via SSH!")
-print("\nPlease notice that the following rules are temporary! \nIf you restart your Server they will be reseted. ")
-print("If you want to save them, please search for the right method for your distribution.")
+print("It is possible that you loose your connections if you are connected via SSH!")
+print("\nPlease notice that the following rules are temporary!\nWhen your server restarts, they will be reset.")
+print("If you want these rules to be persistent, please search for the right method for your distribution (e.g. iptables-save/iptables-restore).")
 
-if query_yes_no("Add this rules to your Server?"):
+if query_yes_no("Add these rules to your server?"):
     for r in rules:
         subprocess.Popen(r, shell=True, stdout=subprocess.PIPE).communicate()[0];
         print("Added")
